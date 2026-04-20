@@ -25,7 +25,6 @@ web_project/
     └── map.html        # 其他地圖相關頁面
 
 ## 啟動流程
-```text
 cd web_project
 python3 -m venv venv
 source venv/bin/activate
