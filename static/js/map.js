@@ -1,10 +1,25 @@
-const ncu = [24.9681, 121.1921];
-const map = L.map('map').setView(ncu, 16);
-
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; OpenStreetMap contributors'
-}).addTo(map);
+});
+
+const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{
+    attribution: 'Tile &copy; Esri'
+});
+
+const ncu = [24.9681, 121.1921];
+const map = L.map('map', {
+    center: ncu,
+    zoom: 16,
+    layers: [satellite] // 預設衛星俯瞰圖
+})
+
+const baseMaps = {
+    "街道地圖": osm,
+    "衛星俯瞰": satellite
+};
+
+L.control.layers(baseMaps).addTo(map);
 
 // 1. 資料庫定義 (Key 要對應到按鈕的文字或 ID)
 const poiData = {
