@@ -92,3 +92,36 @@ document.querySelectorAll('.side-menu button').forEach(button => {
         }
     });
 });
+
+// 問題回報與說明彈窗樣式
+const overlay = document.getElementById('modalOverlay');
+const mTitle = document.getElementById('modalTitle');
+const mBody = document.getElementById('modalBody');
+
+// 儲存表單的 HTML 備份，方便切換
+const formHTML = mBody.innerHTML;
+
+// 點擊問題回報
+document.getElementById('reportBtn').onclick = () => {
+    mTitle.innerText = "問題回報";
+    mBody.innerHTML = formHTML; // 顯示表單
+    overlay.classList.remove('hidden');
+    document.getElementById('cancelBtn').onclick = () => overlay.classList.add('hidden');
+};
+
+// 點擊使用說明
+document.getElementById('infoBtn').onclick = () => {
+    mTitle.innerText = "使用說明";
+    mBody.innerHTML = `
+        <div style="text-align:left; line-height:1.6;">
+            <p>1. 點擊右側選單可開啟/關閉標記。</p>
+            <p>2. 點擊地圖上的圖示可查看詳細資訊。</p>
+            <p>3. 右上角可切換衛星或一般地圖。</p>
+        </div>
+    `;
+    overlay.classList.remove('hidden');
+};
+
+// 關閉邏輯
+document.getElementById('closeModal').onclick = () => overlay.classList.add('hidden');
+window.onclick = (event) => { if (event.target == overlay) overlay.classList.add('hidden'); };
