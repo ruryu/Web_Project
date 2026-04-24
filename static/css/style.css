@@ -18,9 +18,15 @@ body {
 }
 
 .top-bar {
-    background: #5db2e6;
+    background: linear-gradient(90deg, #5db2e6 0%, #2980b9 100%);
     color: white;
-    padding: 16px 24px;
+    padding: 10px 24px;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between; 
+    align-items: center;
 }
 
 .logo-title h1 {
