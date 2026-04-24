@@ -4,6 +4,11 @@
     box-sizing: border-box;
 }
 
+@font-face {
+    font-family: Noto Sans TC;
+    src: url(https://fonts.googleapis.com/css?family=Noto+Sans+TC);
+}
+
 body {
     font-family: Arial, "Microsoft JhengHei", sans-serif;
     background: #63b3e6;
@@ -18,14 +23,137 @@ body {
 }
 
 .top-bar {
-    background: #5db2e6;
-    color: white;
-    padding: 16px 24px;
+    background: linear-gradient(90deg, #ffffff 10%, #56008D 100%);;
+    padding: 10px 24px;
 }
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo-title {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.school-logo {
+    height: 40px;
+    width: auto;
+}
+
+.header-right-btns {
+    display: flex;
+    gap: 10px;
+}
+
+.header-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid white;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.header-btn:hover {
+    background: white;
+    color:#56008D; 
+}
+
+/* 彈跳動畫 */
+@keyframes bounceIn {
+    0% { transform: scale(0.3); opacity: 0; }
+    50% { transform: scale(1.05); opacity: 1; }
+    70% { transform: scale(0.9); }
+    100% { transform: scale(1); }
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex; justify-content: center; align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    width: 450px;
+    max-width: 90%;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    position: relative;
+    /* 這裡套用動畫：持續 0.5 秒，並帶有彈性曲線 */
+    animation: bounceIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* 2. 表單樣式  */
+.form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.required { color: #56008D; }
+
+.form-group input, .form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+}
+
+/* 3. 按鈕樣式 */
+.form-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.btn-cancel {
+    background: white;
+    border: 1px solid #333;
+    padding: 10px 25px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-submit {
+    background: #56008D; 
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.close-x {
+    position: absolute;
+    right: 20px;
+    top: 15px;
+    font-size: 28px;
+    cursor: pointer;
+    color: #ccc;
+}
+
+.hidden { display: none; }
 
 .logo-title h1 {
     font-size: 28px;
     font-weight: bold;
+    font-family: sans-serif;
 }
 
 .content {
@@ -53,8 +181,8 @@ body {
 .side-menu {
     width: 240px;
     flex-shrink: 0;
-    background: #dce8f1;
-    border-left: 1px solid #c8d4de;
+    background: #fffdf0;
+    border-left: 1px solid #e8e8e8;
     border-radius: 0 4px 4px 0;
     overflow: hidden;
 }
@@ -63,18 +191,19 @@ body {
     width: 100%;
     padding: 28px 16px;
     border: none;
-    border-bottom: 1px solid #c8d4de;
-    background: #dce8f1;
+    border-bottom: 1px solid #83708f;
+    background: #fff18a;
     text-align: left;
     font-size: 18px;
+    font-family: Noto Sans TC;
     cursor: pointer;
 }
 .side-menu button:active {
-    background: #e0e0e0;
+    background: #c6b7cf;
 }
 
 .side-menu button:hover {
-    background: #c8dcec;
+    background: #c6b7cf;
 }
 
 @media (max-width: 992px) {
