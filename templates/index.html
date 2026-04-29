@@ -1,85 +1,248 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>國立中央大學無障礙地圖</title>
+    <title>國立中央大學 無障礙地圖</title>
 
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+          crossorigin="anonymous" referrerpolicy="no-referrer"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-
-    <!-- Leaflet CSS -->
-    <link
-        rel="stylesheet"
-        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-        crossorigin=""
-    />
 </head>
 <body>
-    <div class="page">
-        <header class="top-bar">
-            <div class="logo-title">
-                <img src="https://www.ncu.edu.tw/var/file/0/1000/img/3/233765208.jpg" alt="NCU Logo" class="school-logo">
-                <h1>國立中央大學無障礙地圖 (NCU Barrier-Free Map)</h1>
-            </div>
-            <div class="header-right-btns">
-                    <button class="header-btn" id="reportBtn">問題回報</button>
-                    <button class="header-btn" id="infoBtn">說明</button>
-                </div>
 
-                <div id="modalOverlay" class="modal-overlay hidden">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h2 id="modalTitle">問題回報</h2>
-                            <span id="closeModal" class="close-x">&times;</span>
-                        </div>
-                        
-                        <div id="modalBody">
-                            <form action="https://formspree.io/f/mjgjjqny" method="POST" class="report-form">
-                                <div class="form-group">
-                                    <label>回報者姓名 <span class="required">*</span></label>
-                                    <input type="text" name="name" placeholder="請輸入姓名" required>
-                                </div>
-                                <div class="form-group">
-                                    <label>回報者Email</label>
-                                    <input type="email" name="email" placeholder="請輸入Email">
-                                </div>
-                                <div class="form-group">
-                                    <label>內容闡述 <span class="required">*</span></label>
-                                    <textarea name="message" rows="4" placeholder="請詳細描述問題" required></textarea>
-                                </div>
-                                <div class="form-footer">
-                                    <button type="button" class="btn-cancel" id="cancelBtn">取消</button>
-                                    <button type="submit" class="btn-submit">送出</button>
-                                </div>
-                            </form>
-                        </div>
+    <!-- ═══ Header ═══ -->
+    <header class="app-header">
+        <div class="header-left">
+            <img src="https://www.ncu.edu.tw/var/file/0/1000/img/3/233765208.jpg"
+                 alt="NCU Logo" class="school-logo" onerror="this.style.display='none'">
+            <div class="header-titles">
+                <span class="title-main">無障礙地圖</span>
+                <span class="title-sub">國立中央大學</span>
+            </div>
+        </div>
+
+        <div class="header-center">
+            <div class="search-wrapper">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="search-input" class="search-input"
+                       placeholder="搜尋設施名稱..." autocomplete="off">
+                <button class="search-clear" id="search-clear" aria-label="清除搜尋">
+                    <i class="fas fa-xmark"></i>
+                </button>
+            </div>
+            <div class="search-dropdown" id="search-dropdown"></div>
+        </div>
+
+        <div class="header-right">
+            <button class="header-btn" id="btn-report">
+                <i class="fas fa-flag"></i><span>問題回報</span>
+            </button>
+            <button class="header-btn" id="btn-info">
+                <i class="fas fa-circle-info"></i><span>說明</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- ═══ Main App ═══ -->
+    <div class="app-body">
+
+        <!-- Map -->
+        <div id="map"></div>
+
+        <!-- Floating Action Buttons -->
+        <div class="fab-group">
+            <button class="fab" id="locate-btn" onclick="locateUser()" title="定位目前位置">
+                <i class="fas fa-location-crosshairs"></i>
+            </button>
+            <button class="fab" onclick="resetView()" title="回到校園中心">
+                <i class="fas fa-house"></i>
+            </button>
+        </div>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-title">
+                <i class="fas fa-layer-group"></i> 設施類型
+            </div>
+
+            <div class="category-list">
+                <button class="cat-btn active" id="cat-aed" onclick="toggleLayer('aed')">
+                    <span class="cat-dot" style="background:#FF4757;">
+                        <i class="fas fa-heart-pulse"></i>
+                    </span>
+                    <span class="cat-label">
+                        <span class="cat-name">AED 體外除顫器</span>
+                        <span class="cat-count" id="cnt-aed">載入中…</span>
+                    </span>
+                    <i class="fas fa-eye cat-eye" id="eye-aed"></i>
+                </button>
+
+                <button class="cat-btn active" id="cat-sos" onclick="toggleLayer('sos')">
+                    <span class="cat-dot" style="background:#FF6B35;">
+                        <i class="fas fa-phone-volume"></i>
+                    </span>
+                    <span class="cat-label">
+                        <span class="cat-name">SOS 緊急求救電話</span>
+                        <span class="cat-count" id="cnt-sos">載入中…</span>
+                    </span>
+                    <i class="fas fa-eye cat-eye" id="eye-sos"></i>
+                </button>
+
+                <button class="cat-btn active" id="cat-ramp" onclick="toggleLayer('ramp')">
+                    <span class="cat-dot" style="background:#2196F3;">
+                        <i class="fas fa-person-walking"></i>
+                    </span>
+                    <span class="cat-label">
+                        <span class="cat-name">無障礙坡道</span>
+                        <span class="cat-count" id="cnt-ramp">載入中…</span>
+                    </span>
+                    <i class="fas fa-eye cat-eye" id="eye-ramp"></i>
+                </button>
+
+                <button class="cat-btn active" id="cat-elevator" onclick="toggleLayer('elevator')">
+                    <span class="cat-dot" style="background:#4CAF50;">
+                        <i class="fas fa-elevator"></i>
+                    </span>
+                    <span class="cat-label">
+                        <span class="cat-name">無障礙電梯</span>
+                        <span class="cat-count" id="cnt-elevator">載入中…</span>
+                    </span>
+                    <i class="fas fa-eye cat-eye" id="eye-elevator"></i>
+                </button>
+            </div>
+
+            <!-- Nearest Facilities (visible after location is obtained) -->
+            <div class="nearest-panel" id="nearest-panel">
+                <div class="nearest-title">
+                    <i class="fas fa-location-dot"></i> 附近最近設施
+                </div>
+                <div id="nearest-list"></div>
+            </div>
+
+            <!-- Location Status Badge -->
+            <div class="loc-status" id="loc-status">
+                <i class="fas fa-circle-dot loc-pulse"></i>
+                <span id="loc-text">已定位您的位置</span>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast-box"></div>
+
+    <!-- ═══ Report Modal ═══ -->
+    <div class="modal-bg" id="modal-report">
+        <div class="modal-box">
+            <div class="modal-head">
+                <div class="modal-head-title">
+                    <i class="fas fa-flag" style="color:#FF4757;"></i> 問題回報
+                </div>
+                <button class="modal-x" onclick="closeModal('modal-report')">
+                    <i class="fas fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-hint">發現地圖資訊有誤或設施有問題？請填寫下方表單，我們將盡快處理。</p>
+                <form id="report-form" action="https://formspree.io/f/mjgjjqny" method="POST">
+                    <div class="field">
+                        <label>問題類型</label>
+                        <select name="issue_type" class="input">
+                            <option value="">請選擇問題類型</option>
+                            <option value="wrong_location">位置資訊錯誤</option>
+                            <option value="broken">設施損壞</option>
+                            <option value="missing">缺少設施資訊</option>
+                            <option value="other">其他</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>問題描述 <span class="req">*</span></label>
+                        <textarea name="description" class="input" rows="4"
+                                  placeholder="請詳細描述您發現的問題..." required></textarea>
+                    </div>
+                    <div class="field">
+                        <label>聯絡信箱 <em>（選填）</em></label>
+                        <input type="email" name="email" class="input" placeholder="example@ncu.edu.tw">
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn-ghost" onclick="closeModal('modal-report')">
+                            取消
+                        </button>
+                        <button type="submit" class="btn-purple">
+                            <i class="fas fa-paper-plane"></i> 送出回報
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ Info Modal ═══ -->
+    <div class="modal-bg" id="modal-info">
+        <div class="modal-box">
+            <div class="modal-head">
+                <div class="modal-head-title">
+                    <i class="fas fa-circle-info" style="color:#2196F3;"></i> 使用說明
+                </div>
+                <button class="modal-x" onclick="closeModal('modal-info')">
+                    <i class="fas fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="info-block">
+                    <h4><i class="fas fa-location-crosshairs"></i> 目前位置</h4>
+                    <ul>
+                        <li>點擊地圖左下角的 <strong>定位按鈕</strong> 顯示您的目前位置</li>
+                        <li>定位成功後，地圖自動移至您的位置並顯示藍色脈衝標記</li>
+                        <li>右側面板將顯示各類設施中距離最近的一處</li>
+                    </ul>
+                </div>
+                <div class="info-block">
+                    <h4><i class="fas fa-map"></i> 地圖操作</h4>
+                    <ul>
+                        <li>滑鼠滾輪 / 雙指捏合可縮放地圖</li>
+                        <li>拖曳以移動地圖視角</li>
+                        <li>右上角可切換衛星圖或街道圖</li>
+                        <li>點擊標記可查看詳細資訊與距離</li>
+                    </ul>
+                </div>
+                <div class="info-block">
+                    <h4><i class="fas fa-layer-group"></i> 設施篩選</h4>
+                    <ul>
+                        <li>點擊右側設施類型按鈕可顯示或隱藏各類標記</li>
+                        <li>眼睛圖示代表目前顯示狀態</li>
+                    </ul>
+                </div>
+                <div class="info-block">
+                    <h4><i class="fas fa-search"></i> 搜尋</h4>
+                    <ul>
+                        <li>在上方搜尋欄輸入設施名稱，點擊結果可跳轉至該位置</li>
+                    </ul>
+                </div>
+                <div class="legend-row">
+                    <div class="legend-item">
+                        <span class="ldot" style="background:#FF4757;"></span>AED 體外除顫器
+                    </div>
+                    <div class="legend-item">
+                        <span class="ldot" style="background:#FF6B35;"></span>SOS 緊急電話
+                    </div>
+                    <div class="legend-item">
+                        <span class="ldot" style="background:#2196F3;"></span>無障礙坡道
+                    </div>
+                    <div class="legend-item">
+                        <span class="ldot" style="background:#4CAF50;"></span>無障礙電梯
                     </div>
                 </div>
             </div>
-        </header>
-
-        <main class="content">
-            <section class="map-section">
-                <div id="map"></div>
-            </section>
-
-            <aside class="side-menu">
-                <button class="menu-btn">AED</button>
-                <button class="menu-btn">SOS電話</button>
-                <button class="menu-btn">無障礙坡道</button>
-                <button class="menu-btn">無障礙電梯</button>
-            </aside>
-        </main>
+        </div>
     </div>
 
-    <!-- Leaflet JS -->
-    <script
-        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-        crossorigin=""
-    ></script>
-
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="{{ url_for('static', filename='js/map.js') }}"></script>
 </body>
 </html>
