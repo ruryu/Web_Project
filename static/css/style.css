@@ -870,6 +870,118 @@ body {
 ::-webkit-scrollbar-thumb { background: #ddd; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #bbb; }
 
+/* ───────── Sidebar Sub-title (天氣圖層) ───────── */
+
+.sidebar-title-sub {
+    border-top: 1px solid var(--border);
+    margin-top: 4px;
+}
+
+/* ───────── Weather Card ───────── */
+
+.weather-card {
+    margin: 0 10px 10px;
+    border: 1.5px solid #c5cae9;
+    border-radius: var(--radius);
+    overflow: hidden;
+    display: none;
+    background: var(--surface);
+}
+
+.weather-loading {
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--muted);
+}
+
+.weather-content {
+    padding: 14px;
+    display: none;
+}
+
+.weather-main {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.weather-emoji {
+    font-size: 38px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.weather-temp-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.weather-temp {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1;
+}
+
+.weather-desc {
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.weather-details {
+    display: flex;
+    gap: 10px;
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+}
+
+.weather-detail-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: var(--muted);
+    flex: 1;
+}
+
+.weather-detail-item i { color: #5C6BC0; font-size: 11px; }
+
+.weather-time {
+    font-size: 10px;
+    color: var(--muted);
+    text-align: right;
+    margin-bottom: 6px;
+}
+
+/* ───────── Rain Playing Indicator ───────── */
+
+.rain-playing {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 11px;
+    color: #5C6BC0;
+    font-weight: 500;
+}
+
+.rain-dot {
+    width: 8px;
+    height: 8px;
+    background: #5C6BC0;
+    border-radius: 50%;
+    animation: blink 1.2s ease-in-out infinite;
+    flex-shrink: 0;
+}
+
 /* ───────── Responsive ───────── */
 
 @media (max-width: 768px) {

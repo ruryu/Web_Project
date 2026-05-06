@@ -9,6 +9,7 @@ const BOUNDS = L.latLngBounds(
     [24.960, 121.183],   // 西南角（留些餘裕）
     [24.976, 121.201]    // 東北角
 );
+const OWM_KEY = '108580b87d11aa9e274174cc3037f578'; // ← 換成你的 OpenWeatherMap API Key
 
 // ───────── Map Setup ─────────
 const map = L.map('map', {
@@ -31,7 +32,40 @@ const tileSat = L.tileLayer(
 );
 
 tileSat.addTo(map);
-L.control.layers({ '街道地圖': tileOSM, '衛星俯瞰': tileSat }, null, { position: 'topright' }).addTo(map);
+const rainOverlay = L.layerGroup();
+L.control.layers(
+    { '街道地圖': tileOSM, '衛星俯瞰': tileSat },
+    { '天氣動畫': rainOverlay },
+    { position: 'topright' }
+).addTo(map);
+
+map.on('overlayadd', async e => {
+    if (e.name !== '天氣動畫') return;
+
+    // 解鎖縮放與邊界，讓雷達範圍可見
+    map.setMinZoom(3);
+    map.setMaxBounds(null);
+    map.setView(NCU, 9, { animate: true });
+
+    const card = document.getElementById('weather-card');
+    card.style.display = 'block';
+    document.getElementById('weather-loading').style.display = 'flex';
+    document.getElementById('weather-content').style.display = 'none';
+    const [weatherData] = await Promise.all([fetchWeather(), Promise.resolve(initCloudLayer())]);
+    renderWeatherCard(weatherData);
+});
+
+map.on('overlayremove', e => {
+    if (e.name !== '天氣動畫') return;
+
+    // 還原校園縮放與邊界
+    map.setMinZoom(15);
+    map.setMaxBounds(BOUNDS);
+    map.setView(NCU, ZOOM, { animate: true });
+
+    document.getElementById('weather-card').style.display = 'none';
+    stopCloudLayer();
+});
 
 // ───────── Facility Data ─────────
 const DATA = {
@@ -446,6 +480,102 @@ document.addEventListener('keydown', e => {
         document.getElementById('search-dropdown').style.display = 'none';
     }
 });
+
+// ───────── Weather: WMO Code Table ─────────
+const WMO = {
+    0:  { label: '晴朗',       emoji: '☀️'  },
+    1:  { label: '大致晴朗',   emoji: '🌤️' },
+    2:  { label: '局部多雲',   emoji: '⛅'  },
+    3:  { label: '陰天',       emoji: '☁️'  },
+    45: { label: '有霧',       emoji: '🌫️' },
+    48: { label: '凍霧',       emoji: '🌫️' },
+    51: { label: '毛毛雨',     emoji: '🌦️' },
+    53: { label: '毛毛雨',     emoji: '🌦️' },
+    55: { label: '毛毛雨',     emoji: '🌦️' },
+    61: { label: '小雨',       emoji: '🌧️' },
+    63: { label: '中雨',       emoji: '🌧️' },
+    65: { label: '大雨',       emoji: '🌧️' },
+    71: { label: '小雪',       emoji: '🌨️' },
+    73: { label: '中雪',       emoji: '🌨️' },
+    75: { label: '大雪',       emoji: '❄️'  },
+    80: { label: '陣雨',       emoji: '🌦️' },
+    81: { label: '陣雨',       emoji: '🌦️' },
+    82: { label: '大陣雨',     emoji: '⛈️'  },
+    95: { label: '雷雨',       emoji: '⛈️'  },
+    96: { label: '雷雨夾冰雹', emoji: '⛈️'  },
+    99: { label: '強雷雨夾冰雹', emoji: '⛈️' },
+};
+
+// ───────── Weather State ─────────
+let cloudLayer     = null;
+let cloudAnimTimer = null;
+
+// ───────── Open-Meteo: 取得當前天氣 ─────────
+async function fetchWeather() {
+    const url = `https://api.open-meteo.com/v1/forecast`
+              + `?latitude=${NCU[0]}&longitude=${NCU[1]}`
+              + `&current=temperature_2m,wind_speed_10m,weather_code,precipitation`
+              + `&timezone=Asia%2FTaipei`;
+    try {
+        const res  = await fetch(url);
+        const data = await res.json();
+        return data.current;
+    } catch {
+        return null;
+    }
+}
+
+function renderWeatherCard(data) {
+    const loading = document.getElementById('weather-loading');
+    const content = document.getElementById('weather-content');
+
+    if (!data) {
+        loading.innerHTML = '<i class="fas fa-exclamation-circle"></i> 天氣資料載入失敗';
+        return;
+    }
+
+    const wmo = WMO[data.weather_code] || { label: '未知', emoji: '🌡️' };
+
+    document.getElementById('weather-icon').textContent  = wmo.emoji;
+    document.getElementById('weather-temp').textContent  = `${data.temperature_2m}°C`;
+    document.getElementById('weather-desc').textContent  = wmo.label;
+    document.getElementById('weather-wind').textContent  = `${data.wind_speed_10m} km/h`;
+    document.getElementById('weather-precip').textContent = `${data.precipitation} mm`;
+
+    const now = new Date();
+    const hh  = String(now.getHours()).padStart(2, '0');
+    const mm  = String(now.getMinutes()).padStart(2, '0');
+    document.getElementById('weather-time').textContent = `更新時間 ${hh}:${mm}`;
+
+    loading.style.display  = 'none';
+    content.style.display  = 'block';
+}
+
+// ───────── OpenWeatherMap: 雲層動畫 ─────────
+function initCloudLayer() {
+    cloudLayer = L.tileLayer(
+        `https://tile.openweathermap.org/map/clouds_new/{z}/{x}/{y}.png?appid=${OWM_KEY}`,
+        { opacity: 0.6, zIndex: 10, maxNativeZoom: 9 }
+    ).addTo(map);
+
+    // 呼吸動畫：opacity 在 0.35 ~ 0.75 之間緩慢振盪
+    let opacity   = 0.6;
+    let direction = -1;
+    cloudAnimTimer = setInterval(() => {
+        opacity += direction * 0.012;
+        if (opacity <= 0.35) direction =  1;
+        if (opacity >= 0.75) direction = -1;
+        cloudLayer.setOpacity(opacity);
+    }, 80);
+}
+
+function stopCloudLayer() {
+    if (cloudAnimTimer) { clearInterval(cloudAnimTimer); cloudAnimTimer = null; }
+    if (cloudLayer) {
+        if (map.hasLayer(cloudLayer)) map.removeLayer(cloudLayer);
+        cloudLayer = null;
+    }
+}
 
 // ───────── Initialize ─────────
 buildMarkers();

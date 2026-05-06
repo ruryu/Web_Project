@@ -116,6 +116,36 @@
                 </button>
             </div>
 
+            <!-- Weather Info Card -->
+            <div class="weather-card" id="weather-card">
+                <div class="weather-loading" id="weather-loading">
+                    <i class="fas fa-spinner fa-spin"></i> 載入天氣中…
+                </div>
+                <div class="weather-content" id="weather-content">
+                    <div class="weather-main">
+                        <span class="weather-emoji" id="weather-icon">🌡️</span>
+                        <div class="weather-temp-wrap">
+                            <span class="weather-temp" id="weather-temp">--°C</span>
+                            <span class="weather-desc" id="weather-desc">--</span>
+                        </div>
+                    </div>
+                    <div class="weather-details">
+                        <div class="weather-detail-item">
+                            <i class="fas fa-wind"></i>
+                            <span id="weather-wind">-- km/h</span>
+                        </div>
+                        <div class="weather-detail-item">
+                            <i class="fas fa-droplet"></i>
+                            <span id="weather-precip">-- mm</span>
+                        </div>
+                    </div>
+                    <div class="weather-time" id="weather-time"></div>
+                    <div class="rain-playing">
+                        <span class="rain-dot"></span> 雷達動畫播放中
+                    </div>
+                </div>
+            </div>
+
             <!-- Nearest Facilities (visible after location is obtained) -->
             <div class="nearest-panel" id="nearest-panel">
                 <div class="nearest-title">

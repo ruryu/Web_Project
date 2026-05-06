@@ -30,3 +30,8 @@ python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 python app.py 啟動地圖
+```
+
+## 需要申請需要申請OpenWeather API KEY!!!
+[https://openweathermap.org/]
+再填入map.js, Line 12
